@@ -16,6 +16,10 @@ function App() {
   const [ retry, setRetry ] = useState(false);
   //state to count how many times the timer ran to make api call
   const [ countRetry, setCountRetry ] = useState(0);
+
+  useEffect(()=>{
+    fetchMovieHandler();
+  },[])
   useEffect(()=>{
     if(!retry){
       const timer = setTimeout(fetchMovieHandler, 5000);  //it helps to retry fetching the movie from server after 5milli sec
@@ -26,7 +30,7 @@ function App() {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch("https://swapi.dev/api/film/");
+      const response = await fetch("https://swapi.dev/api/films/");
       //using the response to catch error before parsing the data
       if(!response.ok){
         throw new Error('Something went wrong ....Retrying');
