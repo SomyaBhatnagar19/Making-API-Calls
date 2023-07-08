@@ -9,10 +9,17 @@ function App() {
   //for loading movies
   const [isLoading, setIsLoading] = useState(false);
 
+  //state for error handling
+  const[ error, setError ] = useState(null);
   const fetchMovieHandler = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("https://swapi.dev/api/films/");
+      setError(null);
+      const response = await fetch("https://swapi.dev/api/film/");
+      //using the response to catch error before parsing the data
+      if(!response.ok){
+        throw new Error('Something went wrong ....Retrying');
+      }
       const data = await response.json();
 
       const transformedMovies = data.results.map((movieData) => {
@@ -26,8 +33,9 @@ function App() {
       setMovies(transformedMovies);
       setIsLoading(false);
     } catch (error) {
-      console.log(error);
+      setError(error.message);
     }
+    setIsLoading(false);
   };
 
   return (
@@ -38,13 +46,13 @@ function App() {
       <section>
         {!isLoading && <MoviesList movies={movies} />}
         {!isLoading && movies.length === 0 && <p>Movies not found.</p>}
+        {!isLoading && error && <p>{error}</p>}
         {isLoading && (
           <div className="parent-container">
             <div className="spinner-container">
-            <div className="loading-spinner"></div>
+              <div className="loading-spinner"></div>
+            </div>
           </div>
-          </div>
-          
         )}
       </section>
     </React.Fragment>
