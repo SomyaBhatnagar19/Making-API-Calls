@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import MoviesList from "./components/MoviesList";
 import "./App.css";
@@ -11,6 +11,17 @@ function App() {
 
   //state for error handling
   const[ error, setError ] = useState(null);
+
+  //states for setting timer and Api calls
+  const [ retry, setRetry ] = useState(false);
+  //state to count how many times the timer ran to make api call
+  const [ countRetry, setCountRetry ] = useState(0);
+  useEffect(()=>{
+    if(!retry){
+      const timer = setTimeout(fetchMovieHandler, 5000);  //it helps to retry fetching the movie from server after 5milli sec
+      return () => clearTimeout(timer);
+    }
+  }, [retry, countRetry])
   const fetchMovieHandler = async () => {
     try {
       setIsLoading(true);
@@ -32,13 +43,22 @@ function App() {
       });
       setMovies(transformedMovies);
       setIsLoading(false);
+      //resetting the retry state on a successful response
+      setRetry(false);
     } catch (error) {
       setError(error.message);
+      setRetry(true); // Retry on error
+      setCountRetry((prevRetryCount) => prevRetryCount + 1);
     }
     setIsLoading(false);
   };
 
-  let content = <p>Movies not Forund.</p>
+  //defining the cancel button handler for stopping to retry
+  const cancelRetryHandler = () => {
+    setRetry(false);
+  }
+
+  let content = <p>Movies not Found.</p>
   if(movies.length > 0){
     content = <MoviesList movies={movies} />;
   }
@@ -58,16 +78,9 @@ function App() {
         <button onClick={fetchMovieHandler}>Fetch Movies</button>
       </section>
       <section>
-        {/* {!isLoading && <MoviesList movies={movies} />}
-        {!isLoading && movies.length === 0 && !error && <p>Movies not found.</p>}
-        {!isLoading && error && <p>{error}</p>}
-        {isLoading && (
-          <div className="parent-container">
-            <div className="spinner-container">
-              <div className="loading-spinner"></div>
-            </div>
-          </div>
-        )} */}
+      {retry && (
+          <button onClick={cancelRetryHandler}>Cancel Retry</button>
+        )}
         {content} 
         {/* above we used a better way than the previous one to display messages to user for loading and error etc. */}
       </section>
