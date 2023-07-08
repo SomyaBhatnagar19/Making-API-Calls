@@ -38,14 +38,28 @@ function App() {
     setIsLoading(false);
   };
 
+  let content = <p>Movies not Forund.</p>
+  if(movies.length > 0){
+    content = <MoviesList movies={movies} />;
+  }
+  if(error){
+    content = <p>{error}</p>;
+  }
+  if(isLoading){
+    content = <div className="parent-container">
+    <div className="spinner-container">
+      <div className="loading-spinner"></div>
+    </div>
+  </div>;
+  }
   return (
     <React.Fragment>
       <section>
         <button onClick={fetchMovieHandler}>Fetch Movies</button>
       </section>
       <section>
-        {!isLoading && <MoviesList movies={movies} />}
-        {!isLoading && movies.length === 0 && <p>Movies not found.</p>}
+        {/* {!isLoading && <MoviesList movies={movies} />}
+        {!isLoading && movies.length === 0 && !error && <p>Movies not found.</p>}
         {!isLoading && error && <p>{error}</p>}
         {isLoading && (
           <div className="parent-container">
@@ -53,7 +67,9 @@ function App() {
               <div className="loading-spinner"></div>
             </div>
           </div>
-        )}
+        )} */}
+        {content} 
+        {/* above we used a better way than the previous one to display messages to user for loading and error etc. */}
       </section>
     </React.Fragment>
   );
