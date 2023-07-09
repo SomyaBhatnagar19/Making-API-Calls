@@ -1,58 +1,53 @@
-// import React, { useState, useEffect, useCallback } from "react";
-
+// import React, { useState, useEffect, useCallback, useMemo } from "react";
 // import MoviesList from "./components/MoviesList";
 // import "./App.css";
 
 // function App() {
 //   const [movies, setMovies] = useState([]);
-
-//   //for loading movies
 //   const [isLoading, setIsLoading] = useState(false);
+//   const [error, setError] = useState(null);
+//   const [retry, setRetry] = useState(false);
+//   const [countRetry, setCountRetry] = useState(0);
 
-//   //state for error handling
-//   const[ error, setError ] = useState(null);
-
-//   //states for setting timer and Api calls
-//   const [ retry, setRetry ] = useState(false);
-//   //state to count how many times the timer ran to make api call
-//   const [ countRetry, setCountRetry ] = useState(0);
-
-//    useEffect(()=>{
-//     if(!retry){
-//       const timer = setTimeout(fetchMovieHandler, 5000);  //it helps to retry fetching the movie from server after 5milli sec
+//   const [newMovieObj, setNewMovieObj] = useState({
+//     title: "",
+//     openingText: "",
+//     releaseDate: "",
+//   });
+  
+//   useEffect(() => {
+//     if (!retry) {
+//       const timer = setTimeout(fetchMovieHandler, 5000);
 //       return () => clearTimeout(timer);
 //     }
-//   }, [retry, countRetry])
+//   }, [retry, countRetry]);
 
 //   const fetchMovieHandler = useCallback(async () => {
 //     try {
 //       setIsLoading(true);
 //       setError(null);
 //       const response = await fetch("https://swapi.dev/api/films/");
-//       //using the response to catch error before parsing the data
-//       if(!response.ok){
-//         throw new Error('Something went wrong ....Retrying');
+
+//       if (!response.ok) {
+//         throw new Error("Something went wrong.... Retrying");
 //       }
+
 //       const data = await response.json();
 
-//       const transformedMovies = data.results.map((movieData) => {
-//         return {
-//           id: movieData.episode_id,
-//           title: movieData.title,
-//           openingText: movieData.opening_crawl,
-//           releaseDate: movieData.release_data,
-//         };
-//       });
+//       const transformedMovies = data.results.map((movieData) => ({
+//         id: movieData.episode_id,
+//         title: movieData.title,
+//         openingText: movieData.opening_crawl,
+//         releaseDate: movieData.release_data,
+//       }));
+
 //       setMovies(transformedMovies);
 //       setIsLoading(false);
-//       //resetting the retry state on a successful response
 //       setRetry(false);
 //     } catch (error) {
 //       setError(error.message);
-//       setRetry(true); // Retry on error
 //       setCountRetry((prevRetryCount) => prevRetryCount + 1);
-//       //making the retry stop if its greater than 5 sec
-//       if(countRetry >= 5){
+//       if (countRetry >= 5) {
 //         setRetry(false);
 //       } else {
 //         setRetry(true);
@@ -61,41 +56,98 @@
 //     setIsLoading(false);
 //   }, [countRetry]);
 
-
-//   useEffect(()=>{
+//   useEffect(() => {
 //     fetchMovieHandler();
-//   }, [fetchMovieHandler])
-  
-//   //defining the cancel button handler for stopping to retry
-//   const cancelRetryHandler = () => {
-//     setRetry(false);
-//   }
+//   }, [fetchMovieHandler]);
 
-//   let content = <p>Movies not Found.</p>
-//   if(movies.length > 0){
-//     content = <MoviesList movies={movies} />;
-//   }
-//   if(error){
-//     content = <p>{error}</p>;
-//   }
-//   if(isLoading){
-//     content = <div className="parent-container">
-//     <div className="spinner-container">
-//       <div className="loading-spinner"></div>
-//     </div>
-//   </div>;
-//   }
+//   const cancelRetryHandler = useCallback(() => {
+//     setRetry(false);
+//   }, []);
+
+//   const content = useMemo(() => {
+//     if (movies.length > 0) {
+//       return <MoviesList movies={movies} />;
+//     }
+//     if (error) {
+//       return <p>{error}</p>;
+//     }
+//     if (isLoading) {
+//       return (
+//         <div className="parent-container">
+//           <div className="spinner-container">
+//             <div className="loading-spinner"></div>
+//           </div>
+//         </div>
+//       );
+//     }
+//     return <p>Movies not Found.</p>;
+//   }, [movies, error, isLoading]);
+
+//   const addMovieHandler = () => {
+//     console.log(newMovieObj);
+//   };
+
 //   return (
 //     <React.Fragment>
+//       <section className="form-container">
+//   <form>
+//     <div className="form-field">
+//       <label htmlFor="title">Title:</label>
+//       <input
+//         type="text"
+//         id="title"
+//         value={newMovieObj.title}
+//         onChange={(event) =>
+//           setNewMovieObj((prevMovieObj) => ({
+//             ...prevMovieObj,
+//             title: event.target.value,
+//           }))
+//         }
+//       />
+//     </div>
+//     <div className="form-field">
+//       <label htmlFor="openingText">Opening Text:</label>
+//       <input
+//         type="text"
+//         id="openingText"
+//         value={newMovieObj.openingText}
+//         onChange={(event) =>
+//           setNewMovieObj((prevMovieObj) => ({
+//             ...prevMovieObj,
+//             openingText: event.target.value,
+//           }))
+//         }
+//       />
+//     </div>
+//     <div className="form-field">
+//       <label htmlFor="releaseDate">Release Date:</label>
+//       <input
+//         type="text"
+//         id="releaseDate"
+//         value={newMovieObj.releaseDate}
+//         onChange={(event) =>
+//           setNewMovieObj((prevMovieObj) => ({
+//             ...prevMovieObj,
+//             releaseDate: event.target.value,
+//           }))
+//         }
+//       />
+//     </div>
+//     <div className="form-button">
+//       <button type="button" onClick={addMovieHandler}>
+//         Add Movie
+//       </button>
+//     </div>
+//   </form>
+// </section>
+
+
 //       <section>
 //         <button onClick={fetchMovieHandler}>Fetch Movies</button>
 //       </section>
 //       <section>
-//       {retry && (
-//           <button onClick={cancelRetryHandler}>Cancel Retry</button>
-//         )}
-//         {content} 
-//         {/* above we used a better way than the previous one to display messages to user for loading and error etc. */}
+//         {retry && <button onClick={cancelRetryHandler}>Cancel Retry</button>}
+//         {content}
 //       </section>
 //     </React.Fragment>
 //   );
@@ -113,6 +165,12 @@ function App() {
   const [retry, setRetry] = useState(false);
   const [countRetry, setCountRetry] = useState(0);
 
+  const [newMovieObj, setNewMovieObj] = useState({
+    title: "",
+    openingText: "",
+    releaseDate: "",
+  });
+  
   useEffect(() => {
     if (!retry) {
       const timer = setTimeout(fetchMovieHandler, 5000);
@@ -136,7 +194,7 @@ function App() {
         id: movieData.episode_id,
         title: movieData.title,
         openingText: movieData.opening_crawl,
-        releaseDate: movieData.release_data,
+        releaseDate: movieData.release_date,
       }));
 
       setMovies(transformedMovies);
@@ -181,14 +239,72 @@ function App() {
     return <p>Movies not Found.</p>;
   }, [movies, error, isLoading]);
 
+  const addMovieHandler = () => {
+    setMovies((prevMovies) => [...prevMovies, newMovieObj]);
+  };
+  
+
   return (
     <React.Fragment>
+      <section className="form-container">
+        <form>
+          <div className="form-field">
+            <label htmlFor="title">Title:</label>
+            <input
+              type="text"
+              id="title"
+              value={newMovieObj.title}
+              onChange={(event) =>
+                setNewMovieObj((prevMovieObj) => ({
+                  ...prevMovieObj,
+                  title: event.target.value,
+                }))
+              }
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="openingText">Opening Text:</label>
+            <input
+              type="text"
+              id="openingText"
+              value={newMovieObj.openingText}
+              onChange={(event) =>
+                setNewMovieObj((prevMovieObj) => ({
+                  ...prevMovieObj,
+                  openingText: event.target.value,
+                }))
+              }
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="releaseDate">Release Date:</label>
+            <input
+              type="text"
+              id="releaseDate"
+              value={newMovieObj.releaseDate}
+              onChange={(event) =>
+                setNewMovieObj((prevMovieObj) => ({
+                  ...prevMovieObj,
+                  releaseDate: event.target.value,
+                }))
+              }
+            />
+          </div>
+          <div className="form-button">
+            <button type="button" onClick={addMovieHandler}>
+              Add Movie
+            </button>
+          </div>
+        </form>
+      </section>
+
       <section>
         <button onClick={fetchMovieHandler}>Fetch Movies</button>
       </section>
       <section>
         {retry && <button onClick={cancelRetryHandler}>Cancel Retry</button>}
         {content}
+        
       </section>
     </React.Fragment>
   );
