@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 import MoviesList from "./components/MoviesList";
 import "./App.css";
@@ -17,16 +17,14 @@ function App() {
   //state to count how many times the timer ran to make api call
   const [ countRetry, setCountRetry ] = useState(0);
 
-  useEffect(()=>{
-    fetchMovieHandler();
-  },[])
-  useEffect(()=>{
+   useEffect(()=>{
     if(!retry){
       const timer = setTimeout(fetchMovieHandler, 5000);  //it helps to retry fetching the movie from server after 5milli sec
       return () => clearTimeout(timer);
     }
   }, [retry, countRetry])
-  const fetchMovieHandler = async () => {
+
+  const fetchMovieHandler = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -53,10 +51,21 @@ function App() {
       setError(error.message);
       setRetry(true); // Retry on error
       setCountRetry((prevRetryCount) => prevRetryCount + 1);
+      //making the retry stop if its greater than 5 sec
+      if(countRetry >= 5){
+        setRetry(false);
+      } else {
+        setRetry(true);
+      }
     }
     setIsLoading(false);
-  };
+  }, [countRetry]);
 
+
+  useEffect(()=>{
+    fetchMovieHandler();
+  }, [fetchMovieHandler])
+  
   //defining the cancel button handler for stopping to retry
   const cancelRetryHandler = () => {
     setRetry(false);
